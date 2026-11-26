@@ -592,7 +592,7 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 12 | Font loading | How Nunito is served, and which weights and character sets (including Romanian diacritics) are loaded. |
 | 13 | Motion | No transitions or animations are defined. |
 | 14 | Browser text wrapping | At 360, Deco/Pi's bounding box touches the headline's text box, though the glyphs don't overlap. Check during implementation that browser line wrapping matches Figma and that no text and decoration collide. |
-| 15 | Repository structure | Where the Angular app lives and the path of `tokens.css` are decided in the Angular setup unit. |
+| 15 | Path of `tokens.css` | The repository structure is decided (see [8](#8-decision-log)). The exact path of `tokens.css` inside `frontend/` is decided in the Angular setup unit. |
 
 ---
 
@@ -619,3 +619,4 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 2026-11-26 | The "Maketa" rectangle on the Home page is excluded. | It is a working reference, not part of the design |
 | 2026-11-26 | Angular component names are left out of this document. | They belong to the Angular construction unit |
 | 2026-11-26 | Sections added to the requested outline: 3.6 Assets, 6.4 Contrast, Open decisions split into 7.1 and 7.2, and a "Source nodes" line under each section. | Assets are referenced by components; contrast needs a home; Figma fixes and missing design need different owners; every section links to Figma |
+| 2026-11-26 | Repository structure: the Angular app lives in `frontend/` and the .NET solution (API and test projects) in `backend/`. | Two independent apps in one repository; the frontend can be hosted as a static site, separately from the API |

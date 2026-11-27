@@ -2,7 +2,7 @@
 
 Developers and coding agents use this document when they build the înțeleg UI. It lists the names, roles and rules behind the design. **It does not repeat the design**: every value, measurement and visual detail lives in Figma, and every section links to the node it describes.
 
-Reflects the Figma file as of 2026-11-26.
+Reflects the Figma file as of 2026-11-27.
 
 ## Contents
 
@@ -33,7 +33,7 @@ Reflects the Figma file as of 2026-11-26.
 
 - **Values** (colours, sizes, font metrics, shadows) live only in Figma. In code they live only in the global tokens stylesheet (`tokens.css`), which will be generated from Figma (not created yet). This document never states them.
 - **If this document and Figma disagree, Figma wins.** Update this document to match it.
-- **To change the design, change Figma first**, then regenerate the tokens and update this document.
+- **To change the design, change Figma first**, then update `tokens.css` and this document.
 
 Figma file: [inteleg - design](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design)
 
@@ -50,6 +50,7 @@ The design is mobile-first:
 
 - **Reference width:** 360. Build and review at this width first.
 - **Verified width:** 414. Every layout must also hold here.
+- **Minimum supported width:** 320. Not designed at this width; layouts must reflow without horizontal scrolling, clipped or overlapping content (WCAG 2.2 Reflow).
 
 Wider layouts are not designed yet (see [7.2](#72-not-designed-yet)).
 
@@ -66,9 +67,13 @@ Wider layouts are not designed yet (see [7.2](#72-not-designed-yet)).
 | Collection **Colors** | `--color-` | `blue/600` → `--color-blue-600` |
 | Collection **Spacing**, `space/*` | (none; the Figma group is the prefix) | `space/16` → `--space-16` |
 | Collection **Spacing**, `radius/*` | (none) | `radius/lg` → `--radius-lg` |
+| Collection **Spacing**, `focus/*` | (none) | `focus/ring-width` → `--focus-ring-width` |
 | Effect styles `shadow/*` | (none) | `shadow/primary` → `--shadow-primary` |
 
-Each collection has a single mode.
+There are two collections, each with a single mode:
+
+- **Colors:** the `blue`, `orange`, `neutral` and `feedback` groups.
+- **Spacing:** the `space`, `radius` and `focus` groups.
 
 **Full mapping.** Every variable and effect style appears here exactly once.
 
@@ -108,11 +113,13 @@ Each collection has a single mode.
 | `radius/lg` | `--radius-lg` |
 | `radius/xl` | `--radius-xl` |
 | `radius/full` | `--radius-full` |
+| `focus/ring-width` | `--focus-ring-width` |
+| `focus/ring-offset` | `--focus-ring-offset` |
 | `shadow/sm` | `--shadow-sm` |
 | `shadow/md` | `--shadow-md` |
 | `shadow/primary` | `--shadow-primary` |
 
-That is 20 colours, 9 spacing values, 5 radii and 3 shadows.
+That is 20 colours, 9 spacing values, 5 radii, 2 focus values and 3 shadows.
 
 ### 2.2 Text styles → custom properties + class
 
@@ -177,7 +184,7 @@ The four Figma groups have these roles: **blue** is Primary, **orange** is Accen
 | `--color-blue-25` | Primary group. Not used on any screen yet. |
 | `--color-blue-50` | Hero background |
 | `--color-blue-200` | Secondary button border; Deco/Circle blue |
-| `--color-blue-600` | Brand blue text: Badge label, Header subtitle, Secondary button label. Also in Logo/Mark and Deco/Pi. |
+| `--color-blue-600` | Brand blue text: Badge label, Header subtitle, Secondary button label. Focus ring. Also in Logo/Mark and Deco/Pi. |
 | `--color-blue-700` | Primary group. Not used on any screen yet. |
 | `--color-orange-50` | Accent group. Not used on any screen yet. |
 | `--color-orange-100` | Deco/Circle peach |
@@ -245,7 +252,18 @@ Source nodes: [Section/radius 24:559](https://www.figma.com/design/4dlQSgg7V4esz
 | `--radius-xl` | Not used on any screen yet |
 | `--radius-full` | Badge (pill) |
 
-### 3.5 Shadows
+### 3.5 Focus
+
+Source nodes: [Section/focus 77:182](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=77-182)
+
+| Token | Role and current use |
+|---|---|
+| `--focus-ring-width` | Width of the focus ring (`outline-width`). Bound to the stroke of every Focus ring in the Button set. |
+| `--focus-ring-offset` | Gap between the element's edge and the focus ring (`outline-offset`). |
+
+Both apply to every interactive element (see [6.5](#65-focus)). In Figma, the offset can't be bound to the ring, because it is a position. The variable documents it, and the ring layers are placed to match it.
+
+### 3.6 Shadows
 
 Source nodes: [Shadows 18:356](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=18-356)
 
@@ -255,7 +273,7 @@ Source nodes: [Shadows 18:356](https://www.figma.com/design/4dlQSgg7V4eszO90nphp
 | `--shadow-md` | Not used on any screen yet |
 | `--shadow-primary` | Primary button. Tinted with `--color-orange-600`. |
 
-### 3.6 Assets
+### 3.7 Assets
 
 Source nodes: listed per asset.
 
@@ -289,7 +307,7 @@ Source nodes: [Logo section 30:14](https://www.figma.com/design/4dlQSgg7V4eszO90
 
 **Anatomy.**
 
-- Logo/Mark: one vector asset ([3.6](#36-assets)).
+- Logo/Mark: one vector asset ([3.7](#37-assets)).
 - Logo/Full: Logo/Mark followed by the wordmark "înțeleg" as live text, in one horizontal row.
 
 **Variants and properties.** Two separate components, Logo/Mark and Logo/Full. No properties.
@@ -350,9 +368,12 @@ Source nodes: [Button section 34:49](https://www.figma.com/design/4dlQSgg7V4eszO
 | Property | Values |
 |---|---|
 | `Variant` | `Primary` · `Secondary` · `Icon` |
+| `State` | `Default` · `Focus` |
 | `Label` (text) | Button text. Applies to Primary and Secondary. |
 
 There is no icon-swap property on the Icon variant; it always shows Icon/Menu.
+
+**Focus state.** Each variant has a Focus state ([Primary 73:150](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=73-150) · [Secondary 73:152](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=73-152) · [Icon 73:154](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=73-154)). It adds a focus ring outside the button, with a gap between the ring and the button. The ring is the same for all three variants and follows the general focus rule in [6.5](#65-focus).
 
 **Tokens used.**
 
@@ -362,12 +383,15 @@ There is no icon-swap property on the Icon variant; it always shows Icon/Menu.
 | Secondary | `--color-neutral-white` | `--color-blue-200` (`--button-secondary-border-width`) | `.text-ui-button`, `--color-blue-600` | `--radius-lg` | — | `--space-24` horizontal | `--button-secondary-height` |
 | Icon | `--color-neutral-white` | `--color-neutral-border` | Icon/Menu, `--color-neutral-ink` | `--radius-md` | `--shadow-sm` | — | `--button-icon-size` |
 
+Focus ring (all variants): `--color-blue-600`, `--focus-ring-width`, `--focus-ring-offset` ([3.5](#35-focus), [6.5](#65-focus)). Its radius is derived from the variant's radius, not set separately.
+
 **Accessibility.**
 
 - The Icon variant is the minimum touch target (44 × 44). Primary and Secondary meet it too.
 - An Icon button always needs an `aria-label`.
-- Label contrast: see [6.4](#64-contrast).
-- Hover, focus, active and disabled states are not defined in Figma.
+- Label and focus ring contrast: see [6.4](#64-contrast).
+- Keyboard focus shows the focus ring ([6.5](#65-focus)).
+- Hover, pressed and disabled states are not defined in Figma.
 
 **Responsive behaviour.**
 
@@ -453,7 +477,7 @@ Source nodes: [Hero section 47:251](https://www.figma.com/design/4dlQSgg7V4eszO9
    - intro text.
 2. **Actions** group ([39:244](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=39-244)):
    - **Buttons** group: Primary "Începe testul", then Secondary "Încearcă un exercițiu"
-   - centred privacy note, "Fără cont. Progresul rămâne doar pe telefonul tău."
+   - centred privacy note, "Fără cont. Progresul rămâne doar pe dispozitivul tău."
 3. **Decorations**, behind the text and clipped by the Hero:
    - top-right corner: Deco/Circle blue, Deco/Plus, Deco/Pi
    - bottom-left corner: Deco/Circle peach.
@@ -470,7 +494,7 @@ Source nodes: [Hero section 47:251](https://www.figma.com/design/4dlQSgg7V4eszO9
 | Headline | `.text-heading-display`, `--color-neutral-ink` |
 | Intro text | `.text-body-lg`, `--color-neutral-ink-2` |
 | Privacy note | `.text-ui-caption`, `--color-neutral-ink-2` |
-| Decorations | colour tokens per asset, see [3.6](#36-assets) |
+| Decorations | colour tokens per asset, see [3.7](#37-assets) |
 
 **Accessibility.**
 
@@ -549,6 +573,13 @@ Ratios are computed from the Figma colour values.
 | `--color-neutral-ink` (icon, non-text) | `--color-neutral-white` | Icon/Menu in the Icon button | 15.97:1 | Pass |
 | `--color-neutral-ink-2` | `--color-neutral-white` | Figma documentation pages only (not in the app) | 8.80:1 | Pass |
 
+**Focus ring** (non-text, 3:1). The ring sits outside the element, so it is measured against the background around the element:
+
+| Foreground | Background | Where | Ratio | AA |
+|---|---|---|---|---|
+| `--color-blue-600` | `--color-blue-50` | Focus ring on Hero buttons | 5.25:1 | Pass |
+| `--color-blue-600` | `--color-neutral-white` | Focus ring on the Header Icon button | 5.83:1 | Pass |
+
 **Decorations** are `aria-hidden` and carry no information, so they are exempt:
 
 | Foreground | Background | Where | Ratio | AA |
@@ -566,6 +597,19 @@ Ratios are computed from the Figma colour values.
 | Secondary border, `--color-blue-200` | `--color-neutral-white` | 1.35:1 |
 | Icon button border, `--color-neutral-border` | `--color-neutral-white` (Header) | 1.18:1 |
 
+### 6.5 Focus
+
+Source nodes: [Button set 33:42](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=33-42) (State = Focus)
+
+Every interactive element shows a visible focus ring when it receives keyboard focus. The Button Focus state ([4.3](#43-button)) defines it:
+
+- **Colour:** `--color-blue-600`.
+- **Position:** outside the element, with a gap between the element and the ring.
+- **Implementation:** CSS `outline` and `outline-offset` on `:focus-visible`. Do not draw the ring with a border or a box-shadow.
+- **Width and offset:** `--focus-ring-width` and `--focus-ring-offset` ([3.5](#35-focus)), from `tokens.css` like any other token. The same values apply to every interactive element.
+- **Radius:** derived. The ring follows the element's radius (the browser draws the outline at the element's radius plus the offset). Never set the ring's radius separately.
+- **Never remove the focus ring** (`outline: none`) without this replacement.
+
 ---
 
 ## 7. Open decisions
@@ -578,7 +622,7 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 
 | # | Topic | Notes |
 |---|---|---|
-| 1 | **Interaction states** | Focus indicator for every interactive element, plus hover, active and disabled states. WCAG 2.2 requires a visible focus indicator with enough contrast. |
+| 1 | **Interaction states** | Hover, pressed and disabled states. Focus is designed (see [6.5](#65-focus)). |
 | 2 | **Dark theme and semantic tokens** | A dark theme is planned, so a semantic token layer (e.g. "action/primary" instead of "orange/400") will be needed. It must be defined in Figma first. |
 | 3 | Menu | What the Header menu button opens, and how. |
 | 4 | Button destinations | What "Începe testul" and "Încearcă un exercițiu" lead to. |
@@ -593,6 +637,9 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 13 | Motion | No transitions or animations are defined. |
 | 14 | Browser text wrapping | At 360, Deco/Pi's bounding box touches the headline's text box, though the glyphs don't overlap. Check during implementation that browser line wrapping matches Figma and that no text and decoration collide. |
 | 15 | Path of `tokens.css` | The repository structure is decided (see [8](#8-decision-log)). The exact path of `tokens.css` inside `frontend/` is decided in the Angular setup unit. |
+| 16 | **Loading and error states** | How a screen shows that data is loading, and how it shows an error (e.g. the API is unreachable). Every screen that calls the API needs both. |
+| 17 | **MVP screens** | The diagnostic test, results, lessons and progress screens. Only Home is designed. |
+| 18 | **Math formulas** | How formulas in lessons and questions are rendered (library or markup), and their typography. |
 
 ---
 
@@ -607,8 +654,8 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 2026-11-26 | Component dimensions with no Figma variable use component-scoped custom properties linked to their Figma node ([2.3](#23-component-scoped-custom-properties)). | Keeps "no hard-coded values" without inventing global size tokens |
 | 2026-11-26 | No semantic aliases for now. A dark theme is planned, so a semantic layer will be defined in Figma first ([7.2](#72-not-designed-yet) #2). | Figma has only primitive tokens; aliases in code would invent a layer |
 | 2026-11-26 | Tokens not used on any screen are documented with their Figma group role only. `feedback/*` = answer states (correct / incorrect). | Don't invent roles the design hasn't assigned |
-| 2026-11-26 | Numbers allowed in this document: viewport widths (360, 414), the 44 × 44 touch target, contrast ratios and WCAG thresholds. Everything else is a token name or a Figma link. | Values live only in Figma and `tokens.css` |
-| 2026-11-26 | Figma variable collections confirmed by the design owner: "Colors" (20 variables) and "Spacing" (`space/4`–`space/48` including `space/20`, plus `radius/*`), one mode each. | `space/20` and unused variables can't be read from bound nodes alone |
+| 2026-11-26 | Numbers allowed in this document: viewport widths (320, 360, 414), the 44 × 44 touch target, contrast ratios and WCAG thresholds. Everything else is a token name or a Figma link. | Values live only in Figma and `tokens.css` |
+| 2026-11-26 | Figma variable collections confirmed by the design owner: "Colors" (20 variables) and "Spacing" (`space/4`–`space/48` including `space/20`, plus `radius/*`, and `focus/*` since 2026-11-27), one mode each. | `space/20` and unused variables can't be read from bound nodes alone |
 | 2026-11-26 | Letter-spacing fixed in Figma: `brand/wordmark`, `heading/display` and `heading/h1` use negative percentages, and the Foundations labels match. | The styles and their labels disagreed on sign and unit |
 | 2026-11-26 | Hero "Intro" and "Actions" gaps bound to `space/16` in Figma. | They were raw values |
 | 2026-11-26 | The Hero's π and "+" flattened to vector assets (Deco/Pi, Deco/Plus) in Figma, with fills bound to `blue/600` and `orange/400`. | They were text with no text style |
@@ -618,5 +665,9 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 2026-11-26 | `orange/600` is used only as the colour of `shadow/primary`, by design. | Intentional |
 | 2026-11-26 | The "Maketa" rectangle on the Home page is excluded. | It is a working reference, not part of the design |
 | 2026-11-26 | Angular component names are left out of this document. | They belong to the Angular construction unit |
-| 2026-11-26 | Sections added to the requested outline: 3.6 Assets, 6.4 Contrast, Open decisions split into 7.1 and 7.2, and a "Source nodes" line under each section. | Assets are referenced by components; contrast needs a home; Figma fixes and missing design need different owners; every section links to Figma |
+| 2026-11-26 | Sections added to the requested outline: 3.7 Assets, 6.4 Contrast, Open decisions split into 7.1 and 7.2, and a "Source nodes" line under each section. | Assets are referenced by components; contrast needs a home; Figma fixes and missing design need different owners; every section links to Figma |
 | 2026-11-26 | Repository structure: the Angular app lives in `frontend/` and the .NET solution (API and test projects) in `backend/`. | Two independent apps in one repository; the frontend can be hosted as a static site, separately from the API |
+| 2026-11-26 | Minimum supported width: 320. It is not designed; layouts reflow down to it ([1](#mobile-first)). | WCAG 2.2 Reflow, required by the Definition of done |
+| 2026-11-26 | Focus state added to the Button set in Figma: a `blue/600` ring outside the button with a gap, the same offset for every variant, radius = button radius + offset. It is the general focus rule for every interactive element ([6.5](#65-focus)). | WCAG 2.2 requires a visible focus indicator; one offset maps to a single `outline-offset` |
+| 2026-11-26 | Hero privacy note reads "Progresul rămâne doar pe dispozitivul tău" instead of "pe telefonul tău". | Progress is stored in the browser, which is not always on a phone |
+| 2026-11-27 | The focus ring's width and offset are Figma variables in the Spacing collection (`focus/ring-width`, `focus/ring-offset`), so they reach code through `tokens.css` like every other token. The ring stroke is bound to `focus/ring-width`; the offset is a position and can't be bound, so the variable documents it. | Keeps Figma the single source of truth for the ring, instead of values that exist only in code |

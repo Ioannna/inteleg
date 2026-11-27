@@ -41,7 +41,7 @@ Figma file: [inteleg - design](https://www.figma.com/design/4dlQSgg7V4eszO90nphp
 |---|---|---|
 | Foundations | [3:2](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-2) | Yes: variables, text styles, effect styles |
 | Components | [16:144](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=16-144) | Yes: Logo, Icon, Button, Badge, Header, Hero |
-| Home | [3:3](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-3) | Yes: the two Home frames. The "Maketa" rectangle is a working reference and is excluded. |
+| Home | [3:3](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-3) | Yes: the three Home frames (mobile 360, mobile 414, desktop). The "Maketa" rectangle is a working reference and is excluded. |
 | Cover, _Utilities | — | No |
 
 ### Mobile-first
@@ -51,8 +51,7 @@ The design is mobile-first:
 - **Reference width:** 360. Build and review at this width first.
 - **Verified width:** 414. Every layout must also hold here.
 - **Minimum supported width:** 320. Not designed at this width; layouts must reflow without horizontal scrolling, clipped or overlapping content (WCAG 2.2 Reflow).
-
-Wider layouts are not designed yet (see [7.2](#72-not-designed-yet)).
+- **Wider screens:** above 414, the app stays a centred column 414 wide (see [5.1](#51-home), verified against the 1280 desktop frame). Layouts designed specifically for tablet or desktop do not exist yet (see [7.2](#72-not-designed-yet) #6).
 
 ---
 
@@ -134,7 +133,11 @@ Each text style `{group}/{name}` becomes:
 
 All text styles use one font family, Nunito, exposed as `--font-family-base`. Figma has no variable for the family; it comes from the text styles.
 
-Figma gives letter-spacing as a percentage of font size. Convert it to `em` (percentage ÷ 100).
+Units:
+
+- **Font size and line height:** `rem`, converted from the Figma px value relative to the browser's default root font size. Never set a font size on `html`, so text follows the user's browser setting.
+- **Letter-spacing:** Figma gives it as a percentage of font size. Convert it to `em` (percentage ÷ 100).
+- **Everything else** (spacing, radius, borders, shadows, component dimensions): `px`, as in Figma.
 
 | Figma text style | Custom property prefix | Class |
 |---|---|---|
@@ -208,7 +211,9 @@ Source nodes: [Typography 10:76](https://www.figma.com/design/4dlQSgg7V4eszO90np
 
 Font family: `--font-family-base` (Nunito). Line heights follow the grid stated in the Typography frame.
 
-**Text style names do not set HTML heading levels.** For example, the Hero headline uses `.text-heading-display`; its HTML level comes from the page's heading outline (see [7.2](#72-not-designed-yet) #8), and `heading/h1` does not mean `<h1>`.
+**Font loading.** Nunito is self-hosted from the Fontsource npm package, as the variable font, with the Latin and Latin Extended subsets (Romanian ș and ț are in Latin Extended) and `font-display: swap`. The app makes no request to a third-party font service.
+
+**Text style names do not set HTML heading levels.** For example, the Hero headline uses `.text-heading-display`; its HTML level comes from the page's heading outline (on Home it is the `<h1>`, see [4.6](#46-hero)), and `heading/h1` does not mean `<h1>`.
 
 | Class | Group | Current use |
 |---|---|---|
@@ -279,6 +284,13 @@ Source nodes: listed per asset.
 
 These are vector assets. Export them from Figma; never redraw them. Each asset's colours are bound to the tokens listed.
 
+**In code:**
+
+- Embed each asset as inline SVG in its component's template.
+- Keep the exported geometry unchanged. Replace each exported fill colour with its token (`var(--color-…)`).
+- Icon/Menu uses `currentColor`, so it takes the colour of the button it sits in.
+- Exception: the favicon is the Logo/Mark export served as a file. A favicon can't read `tokens.css`, so it keeps the Figma colours.
+
 | Asset | Node | Colour tokens | Used in |
 |---|---|---|---|
 | Logo/Mark | [29:3](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=29-3) | `--color-blue-600`, `--color-orange-400` | Logo/Full, Header |
@@ -322,7 +334,8 @@ Source nodes: [Logo section 30:14](https://www.figma.com/design/4dlQSgg7V4eszO90
 **Accessibility.**
 
 - The wordmark is real text, so screen readers can read it.
-- The mark's accessible name or alt text is not defined in Figma.
+- The mark is decorative (`aria-hidden`): the wordmark next to it already names the app.
+- The logo is not a link while Home is the only screen.
 
 **Responsive behaviour.** Fixed size. Logo/Full is used at both 360 and 414. Nothing else is defined in Figma.
 
@@ -343,7 +356,7 @@ Source nodes: [Icon section 33:7](https://www.figma.com/design/4dlQSgg7V4eszO90n
 
 **Accessibility.**
 
-- An icon-only button always needs an `aria-label`, e.g. "Deschide meniul".
+- An icon-only button always needs an `aria-label`, e.g. "Deschide meniul". The icon inside it is `aria-hidden`.
 - Whether a standalone icon is decorative or meaningful is not defined in Figma.
 
 **Responsive behaviour.** Fixed size. Nothing else is defined in Figma.
@@ -458,10 +471,14 @@ Source nodes: [Header section 37:129](https://www.figma.com/design/4dlQSgg7V4esz
 
 **Accessibility.**
 
+- The header is the page's `<header>` landmark.
 - The menu button needs `aria-label="Deschide meniul"`.
-- What the menu opens is not defined in Figma.
+- What the menu opens is not defined in Figma. Until it is, the menu button is a native button with no action ([7.2](#72-not-designed-yet) #3).
 
-**Responsive behaviour.** Stretches to full width (Fill). The layout is the same at 360 and 414.
+**Responsive behaviour.**
+
+- Fills the App column ([5.1](#51-home)). The layout is the same at 360 and 414.
+- Static: it scrolls with the page. It is not sticky.
 
 ### 4.6 Hero
 
@@ -500,11 +517,12 @@ Source nodes: [Hero section 47:251](https://www.figma.com/design/4dlQSgg7V4eszO9
 
 - Decorations are `aria-hidden` in code.
 - Text contrast: see [6.4](#64-contrast).
-- The headline's heading level is not defined in Figma.
+- The headline is the page's only `<h1>`.
+- Until their destinations are designed, both buttons are native buttons with no action ([7.2](#72-not-designed-yet) #4).
 
 **Responsive behaviour.**
 
-- Stretches to full width (Fill). Height hugs the content, so the headline wraps differently at 360 and 414 and the Hero gets shorter at 414.
+- Fills the App column ([5.1](#51-home)). Height hugs the content, so the headline wraps differently at 360 and 414 and the Hero gets shorter at 414.
 - Decorations keep their corner through constraints:
   - top-right group: pinned top and right
   - Deco/Circle peach: pinned bottom and left.
@@ -516,18 +534,20 @@ Source nodes: [Hero section 47:251](https://www.figma.com/design/4dlQSgg7V4eszO9
 
 ### 5.1 Home
 
-Source nodes: [Home page 3:3](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-3) · [Home – mobile 3:7](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-7) (360 × 800) · [Home – mobile 414 48:311](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-311) (414 × 896)
+Source nodes: [Home page 3:3](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-3) · [Home – mobile 3:7](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=3-7) (360 × 800) · [Home – mobile 414 48:311](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-311) (414 × 896) · [Home – desktop 82:145](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=82-145) (1280 × 800)
 
 **Layout.**
 
-- Sections stack vertically and span the full width.
-- Page background: `--color-neutral-50`.
+- Sections stack vertically inside the **App column** ([82:146](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=82-146)). The column fills the viewport up to 414 wide; on wider screens it stays 414 wide and is centred. It clips its content.
+- Column width: layout property `--app-column-width` ([2.3](#23-component-scoped-custom-properties)), taken from the App column node.
+- Landmarks: the Hero sits in the page's `<main>` landmark. The Header stays outside it, as the `<header>` landmark ([4.5](#45-header)).
+- Page background: `--color-neutral-50`, which also fills the space on both sides of the column.
 - There are no gaps between sections.
 
-| # | Section | Component | Node (360) | Node (414) |
-|---|---|---|---|---|
-| 1 | Header | [Header](#45-header) | [48:279](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-279) | [48:312](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-312) |
-| 2 | Hero | [Hero](#46-hero) | [48:294](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-294) | [48:313](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-313) |
+| # | Section | Component | Node (360) | Node (414) | Node (desktop) |
+|---|---|---|---|---|---|
+| 1 | Header | [Header](#45-header) | [48:279](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-279) | [48:312](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-312) | [82:147](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=82-147) |
+| 2 | Hero | [Hero](#46-hero) | [48:294](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-294) | [48:313](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=48-313) | [82:148](https://www.figma.com/design/4dlQSgg7V4eszO90nphpLl/inteleg---design?node-id=82-148) |
 
 **Rules.**
 
@@ -610,6 +630,15 @@ Every interactive element shows a visible focus ring when it receives keyboard f
 - **Radius:** derived. The ring follows the element's radius (the browser draws the outline at the element's radius plus the offset). Never set the ring's radius separately.
 - **Never remove the focus ring** (`outline: none`) without this replacement.
 
+### 6.6 Page metadata
+
+Content decided by the project owner. It applies to every page until a page defines its own.
+
+- **Language:** `<html lang="ro">`.
+- **Title:** "înțeleg".
+- **Description** (`<meta name="description">`): "Pregătește-te pentru Evaluarea Națională la Matematică, pas cu pas."
+- **Favicon:** Logo/Mark (see [3.7](#37-assets)).
+
 ---
 
 ## 7. Open decisions
@@ -624,19 +653,19 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 |---|---|---|
 | 1 | **Interaction states** | Hover, pressed and disabled states. Focus is designed (see [6.5](#65-focus)). |
 | 2 | **Dark theme and semantic tokens** | A dark theme is planned, so a semantic token layer (e.g. "action/primary" instead of "orange/400") will be needed. It must be defined in Figma first. |
-| 3 | Menu | What the Header menu button opens, and how. |
-| 4 | Button destinations | What "Începe testul" and "Încearcă un exercițiu" lead to. |
+| 3 | Menu | What the Header menu button opens, and how. Until then, it is a native button with no action. |
+| 4 | Button destinations | What "Începe testul" and "Încearcă un exercițiu" lead to. Until then, they are native buttons with no action. |
 | 5 | Footer | The Logo usage note mentions a footer; none is designed. |
-| 6 | Wider layouts | Tablet and desktop layouts, and the breakpoints between them. |
+| 6 | Wider layouts | Layouts designed specifically for tablet and desktop, and any breakpoints. Until then, the centred App column applies ([5.1](#51-home)). |
 | 7 | Unused tokens | Roles for tokens marked "not used on any screen yet" in [3](#3-foundations), including how the `feedback/*` answer-state colours pair as text and background. |
-| 8 | Heading structure | The heading level of the Hero headline and the page's heading outline. |
-| 9 | Logo accessibility | The accessible name or alt text for Logo/Mark. |
+| 8 | Heading structure | **Closed 2026-11-27.** The Hero headline is the page's only `<h1>` ([4.6](#46-hero)). |
+| 9 | Logo accessibility | **Closed 2026-11-27.** Logo/Mark is decorative; the logo is not a link ([4.1](#41-logo)). |
 | 10 | Icon semantics | Whether standalone icons are decorative or meaningful. The icon-only button rule ([4.2](#42-icon)) is defined. |
 | 11 | Hero content | The Hero's text is fixed inside the component. Where the content comes from in code is not defined. |
-| 12 | Font loading | How Nunito is served, and which weights and character sets (including Romanian diacritics) are loaded. |
+| 12 | Font loading | **Closed 2026-11-27.** Self-hosted variable font, Latin and Latin Extended ([3.2](#32-typography)). |
 | 13 | Motion | No transitions or animations are defined. |
 | 14 | Browser text wrapping | At 360, Deco/Pi's bounding box touches the headline's text box, though the glyphs don't overlap. Check during implementation that browser line wrapping matches Figma and that no text and decoration collide. |
-| 15 | Path of `tokens.css` | The repository structure is decided (see [8](#8-decision-log)). The exact path of `tokens.css` inside `frontend/` is decided in the Angular setup unit. |
+| 15 | Path of `tokens.css` | The repository structure is decided (see [8](#8-decision-log)). The exact path of `tokens.css` inside `frontend/` is decided in U03 (Design tokens). |
 | 16 | **Loading and error states** | How a screen shows that data is loading, and how it shows an error (e.g. the API is unreachable). Every screen that calls the API needs both. |
 | 17 | **MVP screens** | The diagnostic test, results, lessons and progress screens. Only Home is designed. |
 | 18 | **Math formulas** | How formulas in lessons and questions are rendered (library or markup), and their typography. |
@@ -654,7 +683,7 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 2026-11-26 | Component dimensions with no Figma variable use component-scoped custom properties linked to their Figma node ([2.3](#23-component-scoped-custom-properties)). | Keeps "no hard-coded values" without inventing global size tokens |
 | 2026-11-26 | No semantic aliases for now. A dark theme is planned, so a semantic layer will be defined in Figma first ([7.2](#72-not-designed-yet) #2). | Figma has only primitive tokens; aliases in code would invent a layer |
 | 2026-11-26 | Tokens not used on any screen are documented with their Figma group role only. `feedback/*` = answer states (correct / incorrect). | Don't invent roles the design hasn't assigned |
-| 2026-11-26 | Numbers allowed in this document: viewport widths (320, 360, 414), the 44 × 44 touch target, contrast ratios and WCAG thresholds. Everything else is a token name or a Figma link. | Values live only in Figma and `tokens.css` |
+| 2026-11-26 | Numbers allowed in this document: viewport widths (320, 360, 414, 1280), Figma frame sizes, the 44 × 44 touch target, contrast ratios and WCAG thresholds. Everything else is a token name or a Figma link. | Values live only in Figma and `tokens.css` |
 | 2026-11-26 | Figma variable collections confirmed by the design owner: "Colors" (20 variables) and "Spacing" (`space/4`–`space/48` including `space/20`, plus `radius/*`, and `focus/*` since 2026-11-27), one mode each. | `space/20` and unused variables can't be read from bound nodes alone |
 | 2026-11-26 | Letter-spacing fixed in Figma: `brand/wordmark`, `heading/display` and `heading/h1` use negative percentages, and the Foundations labels match. | The styles and their labels disagreed on sign and unit |
 | 2026-11-26 | Hero "Intro" and "Actions" gaps bound to `space/16` in Figma. | They were raw values |
@@ -671,3 +700,14 @@ None open as of 2026-11-26. All the inconsistencies found while writing this doc
 | 2026-11-26 | Focus state added to the Button set in Figma: a `blue/600` ring outside the button with a gap, the same offset for every variant, radius = button radius + offset. It is the general focus rule for every interactive element ([6.5](#65-focus)). | WCAG 2.2 requires a visible focus indicator; one offset maps to a single `outline-offset` |
 | 2026-11-26 | Hero privacy note reads "Progresul rămâne doar pe dispozitivul tău" instead of "pe telefonul tău". | Progress is stored in the browser, which is not always on a phone |
 | 2026-11-27 | The focus ring's width and offset are Figma variables in the Spacing collection (`focus/ring-width`, `focus/ring-offset`), so they reach code through `tokens.css` like every other token. The ring stroke is bound to `focus/ring-width`; the offset is a position and can't be bound, so the variable documents it. | Keeps Figma the single source of truth for the ring, instead of values that exist only in code |
+| 2026-11-27 | Above 414 wide, Header and Hero sit in a centred App column 414 wide on `neutral/50`, as in the Figma frame "Home – desktop" ([5.1](#51-home)). Its width is the layout property `--app-column-width`, following [2.3](#23-component-scoped-custom-properties). | Keeps the mobile design intact and readable on wide screens until wider layouts are designed. The width has no Figma variable, so it is named like other component dimensions. |
+| 2026-11-27 | Until their destinations are designed, the menu button and both Hero buttons are native buttons with no action ([7.2](#72-not-designed-yet) #3, #4). | They stay focusable and correctly named, without inventing screens or a disabled state that isn't designed |
+| 2026-11-27 | The Hero headline is the page's only `<h1>` ([4.6](#46-hero)). Closes 7.2 #8. | One `<h1>` naming the page's main content |
+| 2026-11-27 | Logo/Mark is decorative (`aria-hidden`), and the logo is not a link while Home is the only screen ([4.1](#41-logo)). Closes 7.2 #9. | The wordmark already names the app; an accessible name on the mark would be read twice |
+| 2026-11-27 | SVG assets are inline SVG, with exported fills replaced by colour tokens and `currentColor` for Icon/Menu ([3.7](#37-assets)). | Colours stay driven by tokens, and the icon takes its button's colour |
+| 2026-11-27 | Exception to "never hard-code colours": the favicon is the Logo/Mark export served as a file and keeps its Figma colours ([3.7](#37-assets)). | A favicon is loaded outside the page, so it can't read `tokens.css` |
+| 2026-11-27 | Nunito is self-hosted (Fontsource variable font, Latin and Latin Extended, `font-display: swap`) ([3.2](#32-typography)). Closes 7.2 #12. | No third-party requests, because users are minors; Romanian ș and ț need Latin Extended |
+| 2026-11-27 | Font sizes and line heights are in `rem`; everything else is in `px` ([2.2](#22-text-styles--custom-properties--class)). | Text follows the user's browser font size |
+| 2026-11-27 | Page metadata: `lang="ro"`, title "înțeleg", description "Pregătește-te pentru Evaluarea Națională la Matematică, pas cu pas.", favicon Logo/Mark ([6.6](#66-page-metadata)). | Content decision by the project owner |
+| 2026-11-27 | The Header is static and scrolls with the page ([4.5](#45-header)). | Sticky behaviour is not designed |
+| 2026-11-27 | On Home, the Hero sits in the `<main>` landmark and the Header stays outside it, as the `<header>` landmark ([5.1](#51-home)). | Screen readers can jump to the main content, and axe flags content outside landmarks |
